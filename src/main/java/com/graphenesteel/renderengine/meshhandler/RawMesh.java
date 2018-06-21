@@ -14,6 +14,7 @@ public class RawMesh {
 
     private int vao;
     private List<Integer> vbos = new ArrayList<>();
+    private int vertexCount = 0;
 
     public RawMesh(){
         vao = createVAO();
@@ -22,6 +23,12 @@ public class RawMesh {
     public RawMesh(float[] positions){
         vao = createVAO();
         storeDataInAttributeList(0, positions);
+        unbindVAO();
+    }
+    public RawMesh(float[] positions,int vertexCount){
+        vao = createVAO();
+        storeDataInAttributeList(0, positions);
+        this.vertexCount = vertexCount;
         unbindVAO();
     }
     private int createVAO() {
@@ -58,5 +65,9 @@ public class RawMesh {
         buffer.put(data);
         buffer.flip();
         return buffer;
+    }
+
+    public int getVertexCount() {
+        return vertexCount;
     }
 }
