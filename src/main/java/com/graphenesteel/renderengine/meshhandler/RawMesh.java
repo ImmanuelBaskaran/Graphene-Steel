@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,13 +23,34 @@ public class RawMesh {
     }
     public RawMesh(float[] positions){
         vao = createVAO();
-        storeDataInAttributeList(0, positions);
+        storeDataInAttributeList(0,3, positions);
         unbindVAO();
     }
-    public RawMesh(float[] positions,int vertexCount){
+    public RawMesh(float[] positions,int[] indicies,float[] textureCoord){
+        this(positions,indicies);
         vao = createVAO();
-        storeDataInAttributeList(0, positions);
-        this.vertexCount = vertexCount;
+        bindIndicesBuffer(indicies);
+        vertexCount = indicies.length;
+        storeDataInAttributeList(0,3, positions);
+        storeDataInAttributeList(1,2, textureCoord);
+        unbindVAO();
+    }
+    public RawMesh(float[] positions,int[] indicies,float[] textureCoord,float[] normals){
+        this(positions,indicies);
+        vao = createVAO();
+        bindIndicesBuffer(indicies);
+        vertexCount = indicies.length;
+        storeDataInAttributeList(0,3, positions);
+        storeDataInAttributeList(1,2, textureCoord);
+        storeDataInAttributeList(2,3,normals);
+        unbindVAO();
+    }
+
+    public RawMesh(float[] positions,int[] indicies){
+        vao = createVAO();
+        bindIndicesBuffer(indicies);
+        vertexCount = indicies.length;
+        storeDataInAttributeList(0,3, positions);
         unbindVAO();
     }
     private int createVAO() {
@@ -44,18 +66,18 @@ public class RawMesh {
         return vao;
     }
 
-    private void storeDataInAttributeList(int attributeNumber, float[] data) {
+    private void storeDataInAttributeList(int attributeNumber,int size, float[] data) {
         int vboID = GL15.glGenBuffers();
         vbos.add(vboID);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
         FloatBuffer buffer = storeDataInFloatBuffer(data);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
-        GL20.glVertexAttribPointer(attributeNumber, 3, GL11.GL_FLOAT, false, 0, 0);
+        GL20.glVertexAttribPointer(attributeNumber, size, GL11.GL_FLOAT, false, 0, 0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
     }
 
     public void destroy(){
-                GL30.glDeleteVertexArrays(vao);
+        GL30.glDeleteVertexArrays(vao);
         for (int vbo : vbos) {
             GL15.glDeleteBuffers(vbo);
         }
@@ -66,6 +88,24 @@ public class RawMesh {
         buffer.flip();
         return buffer;
     }
+
+
+    private void bindIndicesBuffer(int[] indices) {
+        int vboId = GL15.glGenBuffers();
+        vbos.add(vboId);
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, vboId);
+        IntBuffer buffer = storeDataInIntBuffer(indices);
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
+    }
+
+
+    private IntBuffer storeDataInIntBuffer(int[] data) {
+        IntBuffer buffer = BufferUtils.createIntBuffer(data.length);
+        buffer.put(data);
+        buffer.flip();
+        return buffer;
+    }
+
 
     public int getVertexCount() {
         return vertexCount;

@@ -1,4 +1,7 @@
 package com.graphenesteel.renderengine;
+import com.graphenesteel.renderengine.input.Keyboard;
+import com.graphenesteel.renderengine.input.Mouse;
+import com.graphenesteel.renderengine.input.MouseButton;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -19,6 +22,15 @@ public class WindowManager {
     private long window;
     private int width,height;
     private String title;
+
+    private static long lastFrameTime;
+    private static long delta;
+
+    private GLFWKeyCallback keyCallback;
+    private GLFWCursorPosCallback mouseCallback;
+    private GLFWMouseButtonCallback mouseButtonCallback;
+
+
     /**
      * Creates a WindowManager object that creates a GLFW window
      * @param WIDTH the width of the window you wish to create
@@ -102,6 +114,13 @@ public class WindowManager {
         // Enable v-sync
         glfwSwapInterval(1);
 
+        GLFW.glfwSetKeyCallback(window, keyCallback = new Keyboard());
+
+        glfwSetCursorPosCallback(window, mouseCallback = new Mouse());
+        glfwSetMouseButtonCallback(window, mouseButtonCallback = new MouseButton());
+
+        lastFrameTime = getCurrentTime();
+
         // Make the window visible
         glfwShowWindow(window);
         GL.createCapabilities();
@@ -119,13 +138,20 @@ public class WindowManager {
 
 
         glfwSwapBuffers(window); // swap the color buffers
-
         // Poll for window events. The key callback above will only be
         // invoked during this call.
         glfwPollEvents();
-
+        long currentFrameTime = getCurrentTime();
+        delta = (currentFrameTime-lastFrameTime);
+        lastFrameTime=currentFrameTime;
     }
 
+    public static float getDelta(){
+        return delta/(1000f);
+    }
 
+    private static long getCurrentTime(){
+        return System.currentTimeMillis();
+    }
 
 }
