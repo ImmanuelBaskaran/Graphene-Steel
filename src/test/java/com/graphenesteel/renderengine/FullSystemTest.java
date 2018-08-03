@@ -1,7 +1,4 @@
 package com.graphenesteel.renderengine;
 
-public class Renderer {
-
-
-
+public class FullSystemTest {
 }
